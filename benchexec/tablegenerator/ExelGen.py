@@ -86,30 +86,36 @@ class EXELGenerator:
 		# Width of test case  column
 		self.worksheet.set_column(1, 1, 70)
 		# Width of result columns
-		self.worksheet.set_column(2, len(self.tools) + 1, 20)
+		self.worksheet.set_column(2, 2 * len(self.tools) + 1, 20)
 		# Height of first row
-		self.worksheet.set_row(0, 70)
+		self.worksheet.set_row(0, 40)
 		
-		self.worksheet.write(0, 0, 'S.NO', headerFormat)
-		self.worksheet.write(0, 1, 'test case'.upper(), headerFormat)
+		# self.worksheet.write(0, 0, 'S.NO', headerFormat)
+		# self.worksheet.write(0, 1, 'test case'.upper(), headerFormat)
+		self.worksheet.merge_range(0, 0, 1, 0, 'S.NO', headerFormat)
+		self.worksheet.merge_range(0, 1, 1, 1, 'TEST CASE', headerFormat)
 		
 		
-		for i in range(2, len(self.tools) + 2):
-			tool = self.tools[i - 2]
-			self.worksheet.write(0, i, str(tool).upper(), headerFormat)
+		for i in range(len(self.tools)):
+			tool = self.tools[i]
+			# self.worksheet.write(0, i, str(tool).upper(), headerFormat)
+			self.worksheet.merge_range(0, 2 * i + 2, 0, 2 * i + 3, str(tool).upper(), headerFormat)
+			self.worksheet.write(1, 2 * i + 2, 'STATUS', headerFormat)
+			self.worksheet.write(1, 2 * i + 3, 'WALL TIME', headerFormat)
 
 
-		row_num = 1
+		row_num = 2
 		for testcase in self.results:
 			self.worksheet.set_row(row_num, 30)
-			self.worksheet.write(row_num, 0, row_num, simple_center)
+			self.worksheet.write(row_num, 0, row_num - 1, simple_center)
 			self.worksheet.write(row_num, 1, testcase, testcaseFormat)	
 			for i in range(len(self.tools)):
 				tool = self.tools[i]
 				resultRecord = self.results[testcase][tool]
 				status = resultRecord.status
 
-				self.worksheet.write(row_num, i + 2, resultRecord.result, resultFormats[status])
+				self.worksheet.write(row_num, 2 * i + 2, resultRecord.result, resultFormats[status])
+				self.worksheet.write(row_num, 2 * i + 3, resultRecord.time, simple_center)
 
 			row_num += 1
 

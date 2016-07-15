@@ -1439,10 +1439,7 @@ def generateExelFile(datadict, filename):
                     time = value[:-1] or colmn.pattern or '-'
                     tool = tools[tool_index]
                     results[testcase][tool] = ResultRecord(testcase, status, time, runResult.category)
-
                     tool_index += 1
-                else:
-                    print("ERR : Unknown title", title)
                 
     ExelGenDriver(results, tools, filename)
 
