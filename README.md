@@ -103,7 +103,7 @@ The developers of the following tools use BenchExec:
 If you would like to be listed here, [contact us](https://github.com/sosy-lab/benchexec/issues/new).
 
 
-### Changes from original repositry.
+# Changes from original repositry.
 
 This is a modified version of BenchExec. The main difference with original version is ability
 of `table-generator` to produce spread sheet(`.xlsx`) file.
@@ -115,13 +115,9 @@ used to generate spread sheet file. At the same time, end user experince remains
 Users can generate output files, in same was as original tool.
 ie,
 
-'''shell
+    $ table-generator <one or more xml input files>
 
-      $ table-generator <one or more xml input files>
-
-'''
-
-#### Need for Spread Sheet file
+### Need for Spread Sheet file
 
 A spread sheet file can be helpful for people who compares result of multiple tools as a part of 
 their experiments. In some scenarios, it is better than `HTML` or `CSV` files because of reasons
