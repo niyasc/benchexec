@@ -38,6 +38,7 @@ import time
 import urllib.parse
 import urllib.request
 from xml.etree import ElementTree
+from collections import OrderedDict
 
 import tempita
 from functools import reduce
@@ -45,6 +46,7 @@ from functools import reduce
 from benchexec import __version__
 import benchexec.result as result
 from benchexec.tablegenerator import util as Util
+from benchexec.tablegenerator.ExelGen import main as ExelGenDriver, ResultRecord
 from benchexec.tablegenerator.columns import Column, ColumnMeasureType, ColumnType
 import zipfile
 
@@ -64,7 +66,7 @@ LIB_URL = "https://cdn.jsdelivr.net"
 LIB_URL_OFFLINE = "lib/javascript"
 
 TEMPLATE_FILE_NAME = os.path.join(os.path.dirname(__file__), 'template.{format}')
-TEMPLATE_FORMATS = ['html', 'csv']
+TEMPLATE_FORMATS = ['html', 'csv', 'xlsx']
 TEMPLATE_ENCODING = 'UTF-8'
 TEMPLATE_NAMESPACE={
    'flatten': Util.flatten,
@@ -1372,6 +1374,10 @@ def create_tables(name, runSetResults, rows, rowsDiff, outputPath, outputFilePat
             stats = stats_columns = None
 
         for template_format in (options.format or TEMPLATE_FORMATS):
+            
+            if table_type == 'diff' and template_format == 'xlsx':
+                continue
+            
             if outputFilePattern == '-':
                 outfile = None
                 logging.info('Writing %s to stdout...', template_format.upper().ljust(4))
@@ -1382,11 +1388,14 @@ def create_tables(name, runSetResults, rows, rowsDiff, outputPath, outputFilePat
             this_template_values = dict(title=title, body=rows, foot=stats, foot_columns=stats_columns)
             this_template_values.update(template_values.__dict__)
 
-            futures.append(parallel.submit(
-                write_table_in_format,
-                template_format, outfile, this_template_values,
-                options.show_table and template_format == 'html',
-                ))
+            if template_format == 'xlsx':
+                generateExelFile(this_template_values, outfile)
+            else:
+                futures.append(parallel.submit(
+                    write_table_in_format,
+                    template_format, outfile, this_template_values,
+                    options.show_table and template_format == 'html',
+                    ))
 
     # write normal tables
     write_table("table", name, rows,
@@ -1397,6 +1406,45 @@ def create_tables(name, runSetResults, rows, rowsDiff, outputPath, outputFilePat
         write_table("diff", name + " differences", rowsDiff, use_local_summary=False)
 
     return futures
+    
+def generateExelFile(datadict, filename):
+    '''
+       Extract required data from benchexec data structure and pass
+       it to ExelGen module.
+    '''
+    head = datadict['head']
+    line = head['tool']
+    content = line.content
+    tools = [t[0] for t in content]
+
+    body = datadict['body']
+
+    results = OrderedDict()
+
+    for line in body:
+        testcase = line.short_filename
+        results[testcase] = {}
+        tool_index = 0
+        for runResult in line.results:
+            status = None
+            time = None
+            for column, value in zip(runResult.columns, runResult.values):
+                # print(value or column.pattern or '-', column.title, column.type)
+                # print("-" * 20)
+                # pass
+                title = column.title
+                if title == 'status':
+                    status = value or column.pattern or '-'
+                elif title == 'walltime':
+                    time = value[:-1] or colmn.pattern or '-'
+                    tool = tools[tool_index]
+                    results[testcase][tool] = ResultRecord(testcase, status, time, runResult.category)
+
+                    tool_index += 1
+                else:
+                    print("ERR : Unknown title", title)
+                
+    ExelGenDriver(results, tools, filename)
 
 
 def write_table_in_format(template_format, outfile, template_values, show_table):
