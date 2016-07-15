@@ -101,3 +101,37 @@ The developers of the following tools use BenchExec:
 - [SMACK](https://github.com/smackers/smack)
 
 If you would like to be listed here, [contact us](https://github.com/sosy-lab/benchexec/issues/new).
+
+
+### Changes from original repositry.
+
+This is a modified version of BenchExec. The main difference with original version is ability
+of `table-generator` to produce spread sheet(`.xlsx`) file.
+
+Since a spread sheet file is not a semi-structured file, it can't be generated using templating
+method used by BenchExec to generate `csv` and `html` files. A compeltely different approach is
+used to generate spread sheet file. At the same time, end user experince remains intact.
+
+Users can generate output files, in same was as original tool.
+ie,
+
+'''shell
+
+      $ table-generator <one or more xml input files>
+
+'''
+
+#### Need for Spread Sheet file
+
+A spread sheet file can be helpful for people who compares result of multiple tools as a part of 
+their experiments. In some scenarios, it is better than `HTML` or `CSV` files because of reasons
+mentioned below.
+
+- HTML is read-only file. If users want to apply some filters, or add some comments, it is not 
+  possible with HTML file.
+
+- CSV file can overcome limitations mentioned in first point. However, being a plain text based
+  file, generated CSV file can't have formatting which includes adjusting column and row size,
+  applying colors, which will help to improve readability and represent status of result(correct,
+  incorrect, unknown, ..etc).
+
